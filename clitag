@@ -6,6 +6,14 @@ import re
 
 
 parser = argparse.ArgumentParser(description='clitag')
+
+at_group = parser.add_argument_group('autotitle')
+at_group.add_argument('--autotitle', type=int, nargs=2,
+                      metavar=('START', 'END'),
+                      help="Autotitle based on filename. Requires --sep")
+at_group.add_argument('--sep', type=str, nargs=1,
+                      help="Separator for autotitle")
+
 parser.add_argument('--check', action='store_true',
                     help='List audio files and tags')
 parser.add_argument('--title', type=str, nargs=1,
@@ -28,7 +36,7 @@ parser.add_argument('--re', action='store_true',
                     help="Use regular expressions")
 parser.add_argument('--delete', type=str, nargs='+',
                     help="Delete some keys")
-parser.add_argument('--files', type=str, nargs='+',
+parser.add_argument('--files', type=str, nargs='+', required=True,
                     help="The files to change")
 
 
@@ -46,6 +54,14 @@ def main():
 
         if args.autonumber:
             afile["tracknumber"] = str(n+1)
+
+        if args.autotitle and args.sep:
+            sep = args.sep[0]
+            fname = f.split(sep=sep)
+            start, end = args.autotitle[0], args.autotitle[1]
+            afile["title"] = " ".join(fname[start:end])
+        elif args.autotitle and not args.sep or not args.autotitle and args.sep:
+            raise TypeError("Autotitling requires both --autotitle and --sep")
 
         if args.delete:
             for kd in args.delete:

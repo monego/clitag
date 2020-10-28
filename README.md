@@ -28,6 +28,20 @@ Autonumber an album:
 $ clitag --autonumber --files afolder/*.opus
 ```
 
+Autotitle based on filename. Give it a start, end, and a separator. For e.g. "[tracknumber] - Title - [Date]" use:
+
+```bash
+$ clitag --autotitle 2 -2 --sep " " --files afolder/*.opus
+```
+
+or
+
+```bash
+$ clitag --autotitle 1 -1 --sep "-" --files afolder/*.opus
+```
+
+. The title has to have the same separator at both ends.
+
 # Dependencies
 
 The only external dependency is `mutagen`.
