@@ -36,7 +36,7 @@ parser.add_argument('--re', action='store_true',
                     help="Use regular expressions")
 parser.add_argument('--delete', type=str, nargs='+',
                     help="Delete some keys")
-parser.add_argument('--files', type=str, nargs='+', required=True,
+parser.add_argument('files', type=str, nargs='+',
                     help="The files to change")
 
 
