@@ -19,7 +19,7 @@ $ clitag --delete "genre" afolder/*.opus
 Use a regular expression to replace something in a tag:
 
 ```bash
-$ clitag --re --title "s/pattern/sub/g" afolder/*.opus
+$ clitag --re-title "regexp" "replacement" afolder/*.opus
 ```
 
 Autonumber an album:
