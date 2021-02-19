@@ -2,6 +2,14 @@
 
 A CLI audio tag editor and processor written in Python 3.x using the `mutagen` module, with support for regular expressions and autonumbering. It's more intended for batch processing tags.
 
+# Install
+
+It can be installed through `pip`:
+
+```bash
+$ pip install git+https://codeberg.org/monego/clitag.git
+```
+
 # Usage
 
 Set some tags for all audio files in a folder:
