@@ -21,7 +21,7 @@ $ clitag --artist "Someone" --album "Something" afolder/*.opus
 Delete a tag:
 
 ```bash
-$ clitag --delete "genre" afolder/*.opus
+$ clitag --delete "genre" -- afolder/*.opus
 ```
 
 Use a regular expression to replace something in a tag:
