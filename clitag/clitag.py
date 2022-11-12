@@ -18,8 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import mutagen
 import re
+import sys
+import mutagen
 
 
 parser = argparse.ArgumentParser(description='clitag')
@@ -72,6 +73,8 @@ parser.add_argument('files', type=str, nargs='+',
 
 def main():
 
+    confirm_all = False
+
     args = parser.parse_args()
 
     for n, f in enumerate(args.files):
@@ -83,56 +86,95 @@ def main():
             print("")
 
         if args.autonumber:
-            afile["tracknumber"] = str(n+1)
+            result = str(n+1)
+            print(f"Tracknumber: {afile['tracknumber'][0]} => {result}")
+            afile["tracknumber"] = result
 
         if args.autotitle and args.sep:
             sep = args.sep[0]
             fname = f.split(sep=sep)
             start, end = args.autotitle[0], args.autotitle[1]
-            afile["title"] = " ".join(fname[start:end])
+            result = " ".join(fname[start:end])
+            print(f"Title: {afile['title'][0]} => {result}")
+            afile["title"] = result
         elif args.autotitle and not args.sep or not args.autotitle and args.sep:
             raise TypeError("Autotitling requires both --autotitle and --sep")
 
-        if args.delete:
-            for kd in args.delete:
-                afile.pop(kd, None)
-
         if args.re_title:
-            afile["title"] = re.sub(r"{}".format(args.re_title[0]),
-                                    args.re_title[1], afile["title"][0])
+            result = re.sub(r"{}".format(args.re_title[0]),
+                            args.re_title[1], afile["title"][0])
+            print(f"Title: {afile['title'][0]} => {result}")
+            afile["title"] = result
+
         if args.re_album:
-            afile["album"] = re.sub(r"{}".format(args.re_album[0]),
-                                    args.re_album[1], afile["album"][0])
+            result = re.sub(r"{}".format(args.re_album[0]),
+                            args.re_album[1], afile["album"][0])
+            print(f"Album: {afile['album'][0]} => {result}")
+            afile["album"] = result
+
         if args.re_description:
-            afile["description"] = re.sub(r"{}".format(args.re_description[0]),
-                                          args.re_description[1],
-                                          afile["description"][0])
+            result = re.sub(r"{}".format(args.re_description[0]),
+                            args.re_description[1],
+                            afile["description"][0])
+            print(f"Description: {afile['description'][0]} => {result}")
+            afile["description"] = result
 
         if args.title:
-            title = args.title[0]
-            afile["title"] = title
-        if args.artist:
-            artist = args.artist[0]
-            afile["artist"] = artist
-        if args.album:
-            album = args.album[0]
-            afile["album"] = album
-        if args.genre:
-            genre = args.genre[0]
-            afile["genre"] = genre
-        if args.date:
-            date = args.date[0]
-            afile["date"] = str(date)
-        if args.tracktotal:
-            tracktotal = args.tracktotal[0]
-            afile["tracktotal"] = str(tracktotal)
-        if args.description:
-            description = args.description[0]
-            afile["description"] = description
+            result = args.title[0]
+            print(afile["title"])
+            print(f"Title: {afile['title'][0]} => {result}")
+            afile["title"] = result
 
-        afile.pprint()
-        afile.save()
+        if args.artist:
+            result = args.artist[0]
+            print(f"Artist: {afile['artist'][0]} => {result}")
+            afile["artist"] = result
+
+        if args.album:
+            result = args.album[0]
+            print(f"Album: {afile['album'][0]} => {result}")
+            afile["album"] = result
+
+        if args.genre:
+            result = args.genre[0]
+            print(f"Genre: {afile['genre'][0]} => {result}")
+            afile["genre"] = result
+
+        if args.date:
+            result = args.date[0]
+            print(f"Date: {afile['date'][0]} => {result}")
+            afile["date"] = str(result)
+
+        if args.tracktotal:
+            result = args.tracktotal[0]
+            print(f"Tracktotal: {afile['tracktotal'][0]} => {result}")
+            afile["tracktotal"] = str(result)
+
+        if args.description:
+            result = args.description[0]
+            print(f"Description: {afile['description'][0]} => {result}")
+            afile["description"] = result
+
+        if args.delete:
+            for kd in args.delete:
+                print(f"Delete {kd}")
+                afile.pop(kd, None)
+
+        if confirm_all is False:
+            confirmation = input("Save these changes? (Y/n/!/q) ")
+
+        if confirmation in ("", 'y', '!') or confirm_all:
+            afile.pprint()
+            afile.save()
+            if confirmation == '!' and not confirm_all:
+                confirm_all = True
+            print("")
+        elif confirmation == 'q':
+            print("Exiting.")
+            sys.exit(0)
+        else:
+            print("Not saving further changes.")
 
 
 if __name__ == '__main__':
-    exit(main())
+    sys.exit(main())
