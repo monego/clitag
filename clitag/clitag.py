@@ -78,6 +78,30 @@ def print_change(name, afile, key, result):
     else:
         print(f"{name}:   => {result}")
 
+
+def confirm(afile, confirm_all):
+    """ Ask for user confirmation. """
+    if confirm_all is False:
+        user_confirm = input("Save these changes? (Y/n/!/q) ")
+    else:
+        user_confirm = '!'
+
+    if user_confirm in ('', 'y', 'Y', '!') or confirm_all:
+        afile.pprint()
+        afile.save()
+        if user_confirm == '!' and not confirm_all:
+            confirm_all = True
+        print("Saved change.")
+    elif user_confirm in ('n', 'N'):
+        print("Not saving this change.")
+    elif user_confirm == 'q':
+        print("Exiting.")
+        sys.exit(0)
+    else:
+        print("Please answer y/n/!/q.")
+        confirm(afile, confirm_all)
+    return confirm_all
+
 def main():
 
     confirm_all = False
@@ -166,21 +190,7 @@ def main():
                 print(f"Delete {kd}")
                 afile.pop(kd, None)
 
-        if confirm_all is False:
-            confirmation = input("Save these changes? (Y/n/!/q) ")
-
-        if confirmation in ("", 'y', '!') or confirm_all:
-            afile.pprint()
-            afile.save()
-            if confirmation == '!' and not confirm_all:
-                confirm_all = True
-            print("")
-        elif confirmation == 'q':
-            print("Exiting.")
-            sys.exit(0)
-        else:
-            print("Not saving further changes.")
-
+        confirm_all = confirm(afile, confirm_all)
 
 if __name__ == '__main__':
     sys.exit(main())
