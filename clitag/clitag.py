@@ -53,8 +53,6 @@ dgroup.add_argument('--re-description', type=str, nargs=2,
                     metavar=('REGEXP', 'REPLACEMENT'),
                     help='Change audio description using regular expressions')
 
-parser.add_argument('--check', action='store_true',
-                    help='List audio files and tags')
 parser.add_argument('--artist', type=str, nargs=1,
                     help='Set audio artist')
 parser.add_argument('--genre', type=str, nargs=1,
@@ -110,11 +108,6 @@ def main():
 
     for n, f in enumerate(args.files):
         afile = mutagen.File(f)
-
-        if args.check:
-            for key, value in afile.items():
-                print(key, ': ', value)
-            print("")
 
         if args.autonumber:
             result = str(n+1)
