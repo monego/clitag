@@ -71,6 +71,13 @@ parser.add_argument('files', type=str, nargs='+',
                     help="The files to change")
 
 
+def print_change(name, afile, key, result):
+    """ Print changes before applying. """
+    if key in afile.keys():
+        print(f"{name}: {afile[key][0]} => {result}")
+    else:
+        print(f"{name}:   => {result}")
+
 def main():
 
     confirm_all = False
@@ -87,7 +94,7 @@ def main():
 
         if args.autonumber:
             result = str(n+1)
-            print(f"Tracknumber: {afile['tracknumber'][0]} => {result}")
+            print_change("Tracknumber", afile, "tracknumber", result)
             afile["tracknumber"] = result
 
         if args.autotitle and args.sep:
@@ -95,64 +102,63 @@ def main():
             fname = f.split(sep=sep)
             start, end = args.autotitle[0], args.autotitle[1]
             result = " ".join(fname[start:end])
-            print(f"Title: {afile['title'][0]} => {result}")
             afile["title"] = result
+            print_change("Title", afile, "title", result)
         elif args.autotitle and not args.sep or not args.autotitle and args.sep:
             raise TypeError("Autotitling requires both --autotitle and --sep")
 
         if args.re_title:
             result = re.sub(r"{}".format(args.re_title[0]),
                             args.re_title[1], afile["title"][0])
-            print(f"Title: {afile['title'][0]} => {result}")
+            print_change("Title", afile, "title", result)
             afile["title"] = result
 
         if args.re_album:
             result = re.sub(r"{}".format(args.re_album[0]),
                             args.re_album[1], afile["album"][0])
-            print(f"Album: {afile['album'][0]} => {result}")
+            print_change("Album", afile, "album", result)
             afile["album"] = result
 
         if args.re_description:
             result = re.sub(r"{}".format(args.re_description[0]),
                             args.re_description[1],
                             afile["description"][0])
-            print(f"Description: {afile['description'][0]} => {result}")
+            print_change("Description", afile, "description", result)
             afile["description"] = result
 
         if args.title:
             result = args.title[0]
-            print(afile["title"])
-            print(f"Title: {afile['title'][0]} => {result}")
+            print_change("Title", afile, "title", result)
             afile["title"] = result
 
         if args.artist:
             result = args.artist[0]
-            print(f"Artist: {afile['artist'][0]} => {result}")
+            print_change("Artist", afile, "artist", result)
             afile["artist"] = result
 
         if args.album:
             result = args.album[0]
-            print(f"Album: {afile['album'][0]} => {result}")
+            print_change("Album", afile, "album", result)
             afile["album"] = result
 
         if args.genre:
             result = args.genre[0]
-            print(f"Genre: {afile['genre'][0]} => {result}")
+            print_change("Genre", afile, "genre", result)
             afile["genre"] = result
 
         if args.date:
             result = args.date[0]
-            print(f"Date: {afile['date'][0]} => {result}")
+            print_change("Date", afile, "date", result)
             afile["date"] = str(result)
 
         if args.tracktotal:
             result = args.tracktotal[0]
-            print(f"Tracktotal: {afile['tracktotal'][0]} => {result}")
+            print_change("Tracktotal", afile, "tracktotal", result)
             afile["tracktotal"] = str(result)
 
         if args.description:
             result = args.description[0]
-            print(f"Description: {afile['description'][0]} => {result}")
+            print_change("Description", afile, "description", result)
             afile["description"] = result
 
         if args.delete:
