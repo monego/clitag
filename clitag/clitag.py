@@ -53,6 +53,8 @@ dgroup.add_argument('--re-description', type=str, nargs=2,
                     metavar=('REGEXP', 'REPLACEMENT'),
                     help='Change audio description using regular expressions')
 
+parser.add_argument('--yes', action='store_true',
+                    help='Say "yes" automatically. For non-interactive use')
 parser.add_argument('--artist', type=str, nargs=1,
                     help='Set audio artist')
 parser.add_argument('--genre', type=str, nargs=1,
@@ -78,7 +80,7 @@ def print_change(name, afile, key, result):
 
 
 def confirm(afile, confirm_all):
-    """ Ask for user confirmation. """
+    """ Ask for user to confirm changes. """
     if confirm_all is False:
         user_confirm = input("Save these changes? (Y/n/!/q) ")
     else:
@@ -183,7 +185,11 @@ def main():
                 print(f"Delete {kd}")
                 afile.pop(kd, None)
 
-        confirm_all = confirm(afile, confirm_all)
+        if not args.yes:
+            confirm_all = confirm(afile, confirm_all)
+        else:
+            afile.pprint()
+            afile.save()
 
 if __name__ == '__main__':
     sys.exit(main())
