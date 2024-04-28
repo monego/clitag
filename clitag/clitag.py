@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from rich.console import Console
+from rich.prompt import Confirm
+from rich.table import Table
 import argparse
 import re
 import sys
@@ -24,6 +27,7 @@ import mutagen
 
 
 parser = argparse.ArgumentParser(description='clitag')
+console = Console()
 
 at_group = parser.add_argument_group('autotitle')
 at_group.add_argument('--autotitle', type=int, nargs=2,
@@ -53,8 +57,8 @@ dgroup.add_argument('--re-description', type=str, nargs=2,
                     metavar=('REGEXP', 'REPLACEMENT'),
                     help='Change audio description using regular expressions')
 
-parser.add_argument('--yes', action='store_true',
-                    help='Say "yes" automatically. For non-interactive use')
+parser.add_argument('--interactive', action='store_true',
+                    help='Approve each change manually')
 parser.add_argument('--artist', type=str, nargs=1,
                     help='Set audio artist')
 parser.add_argument('--genre', type=str, nargs=1,
@@ -71,49 +75,33 @@ parser.add_argument('files', type=str, nargs='+',
                     help="The files to change")
 
 
-def print_change(name, afile, key, result):
-    """ Print changes before applying. """
-    if key in afile.keys():
-        print(f"{name}: {afile[key][0]} => {result}")
-    else:
-        print(f"{name}:   => {result}")
-
-
-def confirm(afile, confirm_all):
-    """ Ask for user to confirm changes. """
-    if confirm_all is False:
-        user_confirm = input("Save these changes? (Y/n/!/q) ")
-    else:
-        user_confirm = '!'
-
-    if user_confirm in ('', 'y', 'Y', '!') or confirm_all:
-        afile.pprint()
-        afile.save()
-        if user_confirm == '!' and not confirm_all:
-            confirm_all = True
-        print("Saved change.")
-    elif user_confirm in ('n', 'N'):
-        print("Not saving this change.")
-    elif user_confirm == 'q':
-        print("Exiting.")
-        sys.exit(0)
-    else:
-        print("Please answer y/n/!/q.")
-        confirm(afile, confirm_all)
-    return confirm_all
+def tag_exists(f, tag):
+    try:
+        return f[tag][0]
+    except KeyError:
+        return ""
 
 def main():
 
-    confirm_all = False
-
     args = parser.parse_args()
+
+    afile_list = []
 
     for n, f in enumerate(args.files):
         afile = mutagen.File(f)
+        afile_list.append(afile)
+
+        console.rule(f)
+
+        table = Table(title=f.split('/')[-1])
+
+        table.add_column("Tag", justify="center", style="cyan", no_wrap=True)
+        table.add_column("Before", style="strike on red")
+        table.add_column("After", justify="center", style="green")
 
         if args.autonumber:
             result = str(n+1)
-            print_change("Tracknumber", afile, "tracknumber", result)
+            table.add_row("Tracknumber", tag_exists(afile, "tracknumber"), result)
             afile["tracknumber"] = result
 
         if args.autotitle and args.sep:
@@ -122,62 +110,62 @@ def main():
             start, end = args.autotitle[0], args.autotitle[1]
             result = " ".join(fname[start:end])
             afile["title"] = result
-            print_change("Title", afile, "title", result)
+            table.add_row("Title", tag_exists(afile, "title"), result)
         elif args.autotitle and not args.sep or not args.autotitle and args.sep:
             raise TypeError("Autotitling requires both --autotitle and --sep")
 
         if args.re_title:
             result = re.sub(r"{}".format(args.re_title[0]),
                             args.re_title[1], afile["title"][0])
-            print_change("Title", afile, "title", result)
+            table.add_row("Title", tag_exists(afile, "title"), result)
             afile["title"] = result
 
         if args.re_album:
             result = re.sub(r"{}".format(args.re_album[0]),
                             args.re_album[1], afile["album"][0])
-            print_change("Album", afile, "album", result)
+            table.add_row("Album", tag_exists(afile, "album"), result)
             afile["album"] = result
 
         if args.re_description:
             result = re.sub(r"{}".format(args.re_description[0]),
                             args.re_description[1],
                             afile["description"][0])
-            print_change("Description", afile, "description", result)
+            table.add_row("Description", tag_exists(afile, "description"), result)
             afile["description"] = result
 
         if args.title:
             result = args.title[0]
-            print_change("Title", afile, "title", result)
+            table.add_row("Title", tag_exists(afile, "title"), result)
             afile["title"] = result
 
         if args.artist:
             result = args.artist[0]
-            print_change("Artist", afile, "artist", result)
+            table.add_row("Artist", tag_exists(afile, "artist"), result)
             afile["artist"] = result
 
         if args.album:
             result = args.album[0]
-            print_change("Album", afile, "album", result)
+            table.add_row("Album", tag_exists(afile, "album"), result)
             afile["album"] = result
 
         if args.genre:
             result = args.genre[0]
-            print_change("Genre", afile, "genre", result)
+            table.add_row("Genre", tag_exists(afile, "genre"), result)
             afile["genre"] = result
 
         if args.date:
             result = args.date[0]
-            print_change("Date", afile, "date", result)
+            table.add_row("Date", tag_exists(afile, "date"), str(result))
             afile["date"] = str(result)
 
         if args.tracktotal:
             result = args.tracktotal[0]
-            print_change("Tracktotal", afile, "tracktotal", result)
+            table.add_row("Tracktotal", tag_exists(afile, "tracktotal"), result)
             afile["tracktotal"] = str(result)
 
         if args.description:
             result = args.description[0]
-            print_change("Description", afile, "description", result)
+            table.add_row("Description", tag_exists(afile, "description"), result)
             afile["description"] = result
 
         if args.delete:
@@ -185,11 +173,18 @@ def main():
                 print(f"Delete {kd}")
                 afile.pop(kd, None)
 
-        if not args.yes:
-            confirm_all = confirm(afile, confirm_all)
-        else:
-            afile.pprint()
-            afile.save()
+        console.print(table)
+
+        if args.interactive:
+            if Confirm.ask("Save these changes?"):
+                afile.pprint()
+                afile.save()
+
+    if not args.interactive:
+        if Confirm.ask("Save these changes?"):
+            for afile in afile_list:
+                afile.pprint()
+                afile.save()
 
 if __name__ == '__main__':
     sys.exit(main())

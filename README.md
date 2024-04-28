@@ -1,5 +1,7 @@
 # clitag
 
+![clitag user interace](screenshot.png)
+
 A CLI audio tag editor and processor written in Python 3.x using the `mutagen` module, with support for regular expressions and autonumbering. It's more intended for batch processing tags.
 
 # Install
@@ -52,4 +54,4 @@ $ clitag --autotitle 1 -1 --sep "-" afolder/*.opus
 
 # Dependencies
 
-The only external dependency is `mutagen`.
+The two dependencies are `mutagen` and `rich`.
