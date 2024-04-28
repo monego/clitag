@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "clitag"
+dynamic = ["version"]
+description = "Command line audio tag processor"
+readme = "README.md"
+license = "gpl3+"
+authors = [
+    { name = "Vinicius Monego", email = "monego@posteo.net" },
+]
+dependencies = [
+    "mutagen",
+]
+
+[project.scripts]
+clitag = "clitag.clitag:main"
+
+[project.urls]
+Homepage = "https://codeberg.org/monego/clitag"
+
+[tool.hatch.version]
+path = "clitag/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/clitag",
+]
